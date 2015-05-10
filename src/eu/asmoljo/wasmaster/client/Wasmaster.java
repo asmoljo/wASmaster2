@@ -19,13 +19,16 @@ import eu.asmoljo.wasmaster.services.DataSourceBuilder;
 import eu.asmoljo.wasmaster.services.DataSourceConnectionPool;
 import eu.asmoljo.wasmaster.services.ThreadPoolManager;
 import eu.asmoljo.wasmaster.services.WasCluster;
+import eu.asmoljo.wasmaster.services.supervision.JvmHeapMemorySupervision;
+import eu.asmoljo.wasmaster.services.supervision.SessionSupervision;
 import eu.asmoljo.wasmaster.test.Test1;
+import eu.asmoljo.wasmaster.utils.UserInputReader;
 
 
 public class Wasmaster {
 
 	private static AdminClient adminClient;
-	private static ArrayList<String> ndList = new ArrayList<String>();
+	private static ArrayList<String> ndList = new ArrayList<String>();//OVO STAVI ZA INTERAKTIVNI MOD TAKO DA KORISNIK BIRA BROJ ND-A
 	private static ArrayList<String> clientConnectionPropertiesList;
 	
 	static String mode = null;
@@ -39,8 +42,9 @@ public class Wasmaster {
 	static String param8 = null;
 	static String param9 = null;
 	//ovo ces morat napravit za svaku klasu-akciju posebne poruke jer ce i primati razlicite parametre
-	static String SCRIPT_ERROR_MSG="[For SCRIPT MODE use: mode{interact/script}, server, action{pae/pdse/tpm},tpname{WebContainer/ORB.thread.pool/TCPChannel.DCS/...}, maximumSize, minimumSize, inactivityTimeout,restart{restart=yes/restart=no}]";
-	static String INTERACT_ERROR_MSG="[For INTERACTIVE MODE use: mode{interact/script}, server, action{pae/pdse/tpm}]";
+	static String SCRIPT_ERROR_MSG="[For SCRIPT MODE use: mode{interact/script/monitor}, server, action{pae/pdse/tpm},tpname{WebContainer/ORB.thread.pool/TCPChannel.DCS/...}, maximumSize, minimumSize, inactivityTimeout,restart{restart=yes/restart=no}]";
+	static String INTERACT_ERROR_MSG="[For INTERACTIVE MODE use: mode{interact/script/monitor}, server, action{pae/pdse/tpm}]";
+	static String JvmHeapMemorySupervision_ERROR_MSG="For JvmHeapMemorySupervision MONITORING MODE use: mode{arguments}, server{serverName}, actionName{jvmhms}, actionType{monitor} sleepSeconds{number}, iterationsNumber{number}, output{mail|log|console";
 	
 
 	
@@ -53,9 +57,10 @@ public class Wasmaster {
 		try {
 			
 			mode = args[0];
-			soapServer = args[1];
-			actionName = args[2];
-			actionType = args[3];
+
+
+			
+		
 			
 		} catch (ArrayIndexOutOfBoundsException e) {
 			System.out.println("Niste zadali sve parametre za aplikaciju!");
@@ -66,29 +71,49 @@ public class Wasmaster {
 
 		
 		
-		
-		if (mode.equalsIgnoreCase("interact")){
-			Wasmaster.createAdminClient(soapServer);
-			Wasmaster.action(actionName);
-		}
-		else if (mode.equalsIgnoreCase("script")) {
-			Wasmaster.createAdminClient(soapServer);
-			param4 = args[4];
-			param5 = args[5];
-			param6 = args[6];
-			param7 = args[7];
-			param8 = args[8];
-			param9 = args[9];
-			Wasmaster.action(actionName);
-		}
-		else {
-			System.out.println("Unknown model!");
-			System.out.println(SCRIPT_ERROR_MSG);
-			System.out.println(INTERACT_ERROR_MSG);
-			System.out.println("without commas!");
-			System.exit(0);
+		//AKO JE MODE INTERACT
+		if(mode.equalsIgnoreCase("interact")){
+			
+
+			soapServer = UserInputReader.getUserInputReadString("Upisite ime servera:");
+			actionName = UserInputReader.getUserInputReadString("Upisite ime akcije:");
+			actionType = UserInputReader.getUserInputReadString("Upisite tip akcije:");
+			
 		}
 		
+		
+		
+		//AKO JE MODE ARGUMENTS	
+		else if(mode.equalsIgnoreCase("arguments")){
+			
+			soapServer = args[1];
+			actionName = args[2];
+			actionType = args[3];
+			
+			
+			//JAVA VIRTUAL MACHINE HEAP MEMORY SUPERVISION (jvmhs). AKO PROVJERAVAMO U ZADANOM VREMENSKOM PERIODU ZADANI BROJ PONAVLJANJA. OUTPUT IDE NA MAIL, U LOG DATOTEKU ILI NA KONZOLU
+			if(actionName.equalsIgnoreCase("jvmhms") && (actionType.equalsIgnoreCase("monitor"))){
+				System.out.println("Selected mode is: " +mode+"\n");
+				System.out.println("Selected actionName is: " +actionName+"\n");
+				System.out.println("Selected actionType is: " +actionType+"\n");
+				Wasmaster.createAdminClient(soapServer);
+				
+				try{
+				JvmHeapMemorySupervision jvmps = new JvmHeapMemorySupervision(adminClient, actionName);
+				param4 = args[4]; //sleepSeconds
+				param5 = args[5]; //iterationNumber
+				param6 = args[6]; //outputType
+				jvmps.monitorJvmHeapSize(Long.parseLong(param4), Long.parseLong(param5), param6);
+				}
+				catch(IndexOutOfBoundsException iob){
+					iob.printStackTrace();
+					System.out.println(JvmHeapMemorySupervision_ERROR_MSG);
+					System.exit(0);
+				}
+			
+			}
+			
+		}
 		
 		
 	}
@@ -117,7 +142,7 @@ public class Wasmaster {
 			clientConnectionPropertiesList = ccp.getConnectionPropertiesList(soapServer);
 			
 			String currentDirectory = System.getProperty("user.dir");
-			String trustStore = currentDirectory + "\\trust.jks";
+			String trustStore = currentDirectory + "/trust.jks";
 		
 
 			
@@ -244,10 +269,19 @@ public class Wasmaster {
 			
 			
 			
+			
+			
+			else if(actionName.equalsIgnoreCase("ss")){
+				System.out.println("Selected action is: " +actionName+"\n");
+				SessionSupervision ss = new SessionSupervision(adminClient, actionName);
+				ss.printSessionPerformance();
+			}
+			
+			
 			else if(actionName.equalsIgnoreCase("t1")){
 				System.out.println("Selected action is: " +actionName+"\n");
 				Test1 t = new Test1(adminClient, actionName);
-				t.test("HitroClus");
+				t.test();
 			}
 			
 			
@@ -255,7 +289,7 @@ public class Wasmaster {
 			
 			
 			else {
-				System.out.println("Action name: "+actionName+" is incorrect! {pae/pdse/mtp}");
+				System.out.println("Action name: "+actionName+" is unknown!");
 				System.out.println("...closing program...");
 				System.out.println("Stop!");
 				System.exit(0);

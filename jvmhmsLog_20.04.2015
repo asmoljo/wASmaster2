@@ -1,0 +1,37 @@
+
+
+/node:was85t1Node01/server:PnopServerA1/
+maximumHeapSize: 268 MB
+currentHeapSize: 149 MB
+currentUsedHeapSize: 104 MB
+freeHeapSize: 45 MB
+spaceForExtend: 119 MB
+highWaterMarkHeapSize: 162 MB
+lowWaterMarkHeapSize: 51 MB
+
+/node:was85t1Node01/server:PnopServerA1/
+maximumHeapSize: 268 MB
+currentHeapSize: 149 MB
+currentUsedHeapSize: 122 MB
+freeHeapSize: 26 MB
+spaceForExtend: 119 MB
+highWaterMarkHeapSize: 162 MB
+lowWaterMarkHeapSize: 51 MB
+
+/node:was85p1Node01/server:PnopServerA1/
+maximumHeapSize: 268 MB
+currentHeapSize: 262 MB
+currentUsedHeapSize: 244 MB
+freeHeapSize: 17 MB
+spaceForExtend: 6 MB
+highWaterMarkHeapSize: 262 MB
+lowWaterMarkHeapSize: 51 MB
+
+/node:was85p1Node01/server:PnopServerA1/
+maximumHeapSize: 268 MB
+currentHeapSize: 262 MB
+currentUsedHeapSize: 250 MB
+freeHeapSize: 11 MB
+spaceForExtend: 6 MB
+highWaterMarkHeapSize: 262 MB
+lowWaterMarkHeapSize: 51 MB

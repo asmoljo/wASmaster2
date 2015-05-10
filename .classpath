@@ -3,5 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.USER_LIBRARY/lib"/>
+	<classpathentry kind="lib" path="D:/JavaCode/Workspaces/WAS/Library/com.ibm.ws.admin.client_8.5.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
